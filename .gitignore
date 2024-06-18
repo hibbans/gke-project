@@ -1,0 +1,6 @@
+cm-and-secret\mysql-configmap.yaml
+cm-and-secret\mysql-secret.yaml
+deployment\mysql-deployment.yaml
+nginx-ingress\ingress-k8s-dashboard.yaml
+nginx-ingress\ingress-monitoring.yaml
+secret-decode.txt
