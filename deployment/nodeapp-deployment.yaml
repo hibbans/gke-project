@@ -17,9 +17,11 @@ spec:
         prometheus.io/path: /metrics
         prometheus.io/port: "3000"
     spec:
+      nodeSelector:
+        node: node1
       containers:
       - name: nodeapp
-        image: hibban/apani_node:v1.5
+        image: us-central1-docker.pkg.dev/dev-hibban/apani-nodeapp-registry/apani_node_gcp:v1.0
         resources:
           limits:
             memory: "256Mi" # Batasan maksimum penggunaan memori
@@ -74,11 +76,15 @@ spec:
         image: gcr.io/cloudsql-docker/gce-proxy:1.19.1
         resources:
           limits:
-            memory: "128Mi"
-            cpu: "128m"
+            memory: "256Mi" # Batasan maksimum penggunaan memori
+            cpu: "256m" # Batasan maksimum penggunaan CPU
+          requests:
+            memory: "128Mi" # Permintaan minimum memori
+            cpu: "128m" # Permintaan minimum CPU
         command:
           - "/cloud_sql_proxy"
           - "-instances=dev-hibban:us-central1:apani-mysql=tcp:3306"
+          - "-credential_file=/secrets/credentials.json"
         env:
         - name: MYSQL_DATABASE
           valueFrom:
@@ -107,7 +113,7 @@ spec:
       volumes:
       - name: cloudsql-instance-credentials
         secret:
-          secretName: mysql-secret
+          secretName: cloudsql-instance-credentials
 ---
 apiVersion: v1
 kind: Service
@@ -119,7 +125,7 @@ metadata:
   #       prometheus.io/path: /metrics
   #       prometheus.io/port: "3000"
 spec:
-  type: ClusterIP # LoadBalancer means this service is load-balanced across all nodes in the cluster
+  type: LoadBalancer # LoadBalancer means this service is load-balanced across all nodes in the cluster
   selector:
     app: nodeapp
   ports:
